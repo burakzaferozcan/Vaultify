@@ -3,6 +3,7 @@ import cors from "cors";
 import { config } from "./config/environment";
 import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
+import passwordRoutes from "./routes/passwordRoutes";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/passwords", passwordRoutes);
 
 // DB Connection
 connectDB().then(() => {
