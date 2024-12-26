@@ -7,7 +7,7 @@ export class AuthController {
       const { user, token } = await AuthService.register(req.body);
 
       return res.status(201).json({
-        message: "Kayıt başarılı",
+        message: "Registration successful",
         user: {
           id: user._id,
           name: user.name,
@@ -17,7 +17,7 @@ export class AuthController {
       });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Kayıt işlemi başarısız",
+        error: error.message || "Registration failed",
       });
     }
   }
@@ -27,7 +27,7 @@ export class AuthController {
       const { user, token } = await AuthService.login(req.body);
 
       return res.json({
-        message: "Giriş başarılı",
+        message: "Login successful",
         user: {
           id: user._id,
           name: user.name,
@@ -37,7 +37,7 @@ export class AuthController {
       });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Giriş işlemi başarısız",
+        error: error.message || "Login process failed",
       });
     }
   }
@@ -54,7 +54,7 @@ export class AuthController {
       });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Profil bilgileri alınamadı",
+        error: error.message || "Unable to retrieve profile information",
       });
     }
   }

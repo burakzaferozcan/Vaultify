@@ -13,7 +13,7 @@ export class AuthService {
       // Email kontrolü
       const existingUser = await User.findOne({ email: userData.email });
       if (existingUser) {
-        throw new Error("Bu email adresi zaten kullanımda");
+        throw new Error("This email address is already in use");
       }
 
       // Şifreyi hashle
@@ -46,7 +46,7 @@ export class AuthService {
       // Kullanıcıyı bul
       const user = await User.findOne({ email: credentials.email });
       if (!user) {
-        throw new Error("Geçersiz email veya şifre");
+        throw new Error("Invalid email or password");
       }
 
       // Şifre kontrolü
@@ -56,7 +56,7 @@ export class AuthService {
       );
 
       if (!isValidPassword) {
-        throw new Error("Geçersiz email veya şifre");
+        throw new Error("Invalid email or password");
       }
 
       // JWT token oluştur

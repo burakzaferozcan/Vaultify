@@ -1,15 +1,8 @@
-"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
 export default function Home() {
-  React.useEffect(() => {
-    if (typeof window !== "undefined") {
-      document.documentElement.style.scrollBehavior = "smooth";
-    }
-  }, []);
-
   return (
     <div className="flex min-h-screen flex-col">
       <header className="container z-40 bg-background">
@@ -33,10 +26,10 @@ export default function Home() {
             </Link>
           </div>
           <nav className="flex gap-4">
-            <Link href="/auth/login">
+            <Link href="/auth/signin">
               <Button variant="ghost">Login</Button>
             </Link>
-            <Link href="/auth/register">
+            <Link href="/auth/signup">
               <Button>Sign Up</Button>
             </Link>
           </nav>
@@ -60,7 +53,7 @@ export default function Home() {
               anytime, anywhere. Modern password management made easy.
             </p>
             <div className="space-x-4">
-              <Link href="/auth/register">
+              <Link href="/auth/signup">
                 <Button
                   size="lg"
                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90 transition-opacity"

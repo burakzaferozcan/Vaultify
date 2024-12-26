@@ -3,19 +3,19 @@ import { checkSchema } from "express-validator";
 export const registerValidation = checkSchema({
   email: {
     isEmail: {
-      errorMessage: "Geçerli bir email adresi giriniz",
+      errorMessage: "Enter a valid email address",
     },
     normalizeEmail: true,
   },
   password: {
     isLength: {
       options: { min: 6 },
-      errorMessage: "Şifre en az 6 karakter olmalıdır",
+      errorMessage: "Password must be at least 6 characters",
     },
   },
   name: {
     notEmpty: {
-      errorMessage: "İsim alanı gereklidir",
+      errorMessage: "Name field is required",
     },
     trim: true,
   },
@@ -24,13 +24,13 @@ export const registerValidation = checkSchema({
 export const loginValidation = checkSchema({
   email: {
     isEmail: {
-      errorMessage: "Geçerli bir email adresi giriniz",
+      errorMessage: "Enter a valid email address",
     },
     normalizeEmail: true,
   },
   password: {
     notEmpty: {
-      errorMessage: "Şifre alanı gereklidir",
+      errorMessage: "Email field is required",
     },
   },
 });
@@ -38,25 +38,25 @@ export const loginValidation = checkSchema({
 export const passwordValidation = checkSchema({
   title: {
     notEmpty: {
-      errorMessage: "Başlık alanı gereklidir",
+      errorMessage: "Header field is required",
     },
     trim: true,
   },
   username: {
     notEmpty: {
-      errorMessage: "Kullanıcı adı alanı gereklidir",
+      errorMessage: "Username field is required",
     },
     trim: true,
   },
   password: {
     notEmpty: {
-      errorMessage: "Şifre alanı gereklidir",
+      errorMessage: "Password field is required",
     },
   },
   url: {
     optional: true,
     isURL: {
-      errorMessage: "Geçerli bir URL giriniz",
+      errorMessage: "Enter a valid URL",
     },
     trim: true,
   },

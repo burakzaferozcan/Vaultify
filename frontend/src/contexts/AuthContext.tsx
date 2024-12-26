@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from '@/lib/axios';
-import { useRouter } from 'next/navigation';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import axios from "@/lib/axios";
+import { useRouter } from "next/navigation";
 
 interface User {
   id: string;
@@ -31,13 +31,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (token) {
-        const response = await axios.get('/auth/me');
+        const response = await axios.get("/auth/me");
         setUser(response.data.user);
       }
     } catch (error) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
     } finally {
       setLoading(false);
     }
@@ -45,30 +45,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post("/auth/login", { email, password });
+      localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Giriş yapılırken bir hata oluştu');
+      throw new Error(
+        error.response?.data?.error || "An error occurred while logging in"
+      );
     }
   };
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await axios.post('/auth/register', { name, email, password });
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+      localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
-      router.push('/dashboard');
+      router.push("/dashboard");
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Kayıt olurken bir hata oluştu');
+      throw new Error(
+        error.response?.data?.error || "An error occurred while registering"
+      );
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
-    router.push('/auth/login');
+    router.push("/auth/login");
   };
 
   return (
@@ -81,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

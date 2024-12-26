@@ -25,7 +25,7 @@ export const auth: RequestHandler = async (
     const token = req.header("Authorization")?.replace("Bearer ", "");
 
     if (!token) {
-      res.status(401).json({ error: "Lütfen giriş yapın" });
+      res.status(401).json({ error: "Please log in" });
       return;
     }
 
@@ -34,12 +34,12 @@ export const auth: RequestHandler = async (
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      res.status(401).json({ error: "Lütfen giriş yapın" });
+      res.status(401).json({ error: "Please log in" });
       return;
     }
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ error: "Lütfen giriş yapın" });
+    res.status(401).json({ error: "Please log in" });
   }
 };

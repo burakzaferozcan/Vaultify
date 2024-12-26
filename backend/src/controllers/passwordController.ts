@@ -12,12 +12,12 @@ export class PasswordController {
       });
 
       return res.status(201).json({
-        message: "Şifre başarıyla kaydedildi",
+        message: "Password successfully saved",
         password,
       });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifre oluşturulurken bir hata oluştu",
+        error: error.message || "An error occurred while creating a password",
       });
     }
   }
@@ -33,7 +33,7 @@ export class PasswordController {
       return res.json(decryptedPasswords);
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifreler getirilirken bir hata oluştu",
+        error: error.message || "An error occurred while retrieving passwords",
       });
     }
   }
@@ -47,7 +47,7 @@ export class PasswordController {
       );
 
       if (!password) {
-        return res.status(404).json({ error: "Şifre bulunamadı" });
+        return res.status(404).json({ error: "Password not found" });
       }
 
       const decryptedPassword = await PasswordService.decryptPasswordData(
@@ -56,7 +56,8 @@ export class PasswordController {
       return res.json(decryptedPassword);
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifre getirilirken bir hata oluştu",
+        error:
+          error.message || "An error occurred while retrieving the password",
       });
     }
   }
@@ -71,16 +72,16 @@ export class PasswordController {
       );
 
       if (!updatedPassword) {
-        return res.status(404).json({ error: "Şifre bulunamadı" });
+        return res.status(404).json({ error: "Password not found" });
       }
 
       return res.json({
-        message: "Şifre başarıyla güncellendi",
+        message: "Password updated successfully",
         password: updatedPassword,
       });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifre güncellenirken bir hata oluştu",
+        error: error.message || "An error occurred while updating the password",
       });
     }
   }
@@ -94,13 +95,13 @@ export class PasswordController {
       );
 
       if (!deletedPassword) {
-        return res.status(404).json({ error: "Şifre bulunamadı" });
+        return res.status(404).json({ error: "Password not found" });
       }
 
-      return res.json({ message: "Şifre başarıyla silindi" });
+      return res.json({ message: "Password successfully deleted" });
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifre silinirken bir hata oluştu",
+        error: error.message || "An error occurred while deleting the password",
       });
     }
   }
@@ -118,7 +119,8 @@ export class PasswordController {
       return res.json(decryptedPasswords);
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifre araması yapılırken bir hata oluştu",
+        error:
+          error.message || "An error occurred while searching for a password",
       });
     }
   }
@@ -163,7 +165,7 @@ export class PasswordController {
       return res.json(decryptedPasswords);
     } catch (error: any) {
       return res.status(400).json({
-        error: error.message || "Şifreler dışa aktarılırken bir hata oluştu",
+        error: error.message || "An error occurred while exporting passwords",
       });
     }
   }
