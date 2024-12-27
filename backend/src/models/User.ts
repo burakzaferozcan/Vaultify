@@ -1,35 +1,83 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model } from "mongoose";
+import bcrypt from "bcryptjs";
 
-export interface IUser extends Document {
+interface IUser {
   name: string;
   email: string;
   password: string;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const userSchema = new Schema<IUser>(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       trim: true,
+      minlength: [2, "Name must be at least 2 characters long"],
     },
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       trim: true,
       lowercase: true,
+      match: [
+        /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/,
+        "Please enter a valid email address",
+      ],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
+      minlength: [8, "Password must be at least 8 characters long"],
+      validate: {
+        validator: function (value: string) {
+          // At least one uppercase letter
+          const hasUpperCase = /[A-Z]/.test(value);
+          // At least one lowercase letter
+          const hasLowerCase = /[a-z]/.test(value);
+          // At least one number
+          const hasNumber = /[0-9]/.test(value);
+          // At least one special character
+          const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
+          return hasUpperCase && hasLowerCase && hasNumber && hasSpecial;
+        },
+        message:
+          "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
+      },
     },
   },
   {
     timestamps: true,
   }
 );
+
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error: any) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function (
+  candidatePassword: string
+): Promise<boolean> {
+  try {
+    return await bcrypt.compare(candidatePassword, this.password);
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const User = model<IUser>("User", userSchema);
