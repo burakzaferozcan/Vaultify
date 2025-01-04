@@ -25,31 +25,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
   const checkAuth = async () => {
     try {
+      if (typeof window === 'undefined') {
+        setLoading(false);
+        return;
+      }
+
       const token = localStorage.getItem("token");
-      if (token) {
-        const response = await axios.get("/auth/me");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      const response = await axios.get("/auth/profile");
+      
+      if (response.data.user) {
         setUser(response.data.user);
+      } else {
+        localStorage.removeItem("token");
       }
     } catch (error) {
-      localStorage.removeItem("token");
+      console.error("Auth check error:", error);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem("token");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    checkAuth();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token') {
+        checkAuth();
+      }
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, []);
+
   const login = async (email: string, password: string) => {
     try {
       const response = await axios.post("/auth/login", { email, password });
-      localStorage.setItem("token", response.data.token);
-      setUser(response.data.user);
-      router.push("/dashboard");
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        // Login response'dan gelen user bilgisini kullan
+        if (response.data.user) {
+          setUser(response.data.user);
+        } else {
+          // Eğer login response'unda user bilgisi yoksa profile endpoint'inden al
+          const profileResponse = await axios.get("/auth/profile");
+          if (profileResponse.data.user) {
+            setUser(profileResponse.data.user);
+          }
+        }
+        router.push("/dashboard");
+      }
     } catch (error: any) {
+      console.error("Login error:", error);
       throw new Error(
         error.response?.data?.error || "An error occurred while logging in"
       );
@@ -63,10 +103,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
-      setUser(response.data.user);
-      router.push("/dashboard");
+
+      if (response.data.token) {
+        localStorage.setItem("token", response.data.token);
+        // Register response'dan gelen user bilgisini kullan
+        if (response.data.user) {
+          setUser(response.data.user);
+        } else {
+          // Eğer register response'unda user bilgisi yoksa profile endpoint'inden al
+          const profileResponse = await axios.get("/auth/profile");
+          if (profileResponse.data.user) {
+            setUser(profileResponse.data.user);
+          }
+        }
+        router.push("/dashboard");
+      }
     } catch (error: any) {
+      console.error("Register error:", error);
       throw new Error(
         error.response?.data?.error || "An error occurred while registering"
       );
@@ -74,9 +127,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    setUser(null);
-    router.push("/auth/login");
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem("token");
+      setUser(null);
+      router.push("/auth/signin");
+    }
   };
 
   return (

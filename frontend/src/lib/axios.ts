@@ -7,14 +7,17 @@ const axiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
@@ -25,12 +28,19 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    return response;
+  },
   async (error) => {
-    if (error.response?.status === 401) {
+    // Token geçersiz olduğunda
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
       localStorage.removeItem('token');
-      window.location.href = '/auth/login';
+      // Auth sayfalarında değilsek signin sayfasına yönlendir
+      if (!window.location.pathname.startsWith('/auth')) {
+        window.location.href = '/auth/signin';
+      }
     }
+
     return Promise.reject(error);
   }
 );
