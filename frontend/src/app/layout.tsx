@@ -7,10 +7,22 @@ import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Vaultify - Secure Password Management",
-  description: "Securely store and manage your passwords",
+  title: "Vaultify - Secure Password Manager",
+  description: "Your trusted password manager for secure digital life",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      {
+        url: "/favicon.ico",
+        sizes: "any",
+      },
+      {
+        url: "/icon.svg",
+        type: "image/svg+xml",
+      },
+    ],
+    apple: {
+      url: "/apple-touch-icon.png",
+    },
   },
 };
 
@@ -20,7 +32,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
+    <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
           {children}
