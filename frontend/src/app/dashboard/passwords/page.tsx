@@ -1,107 +1,86 @@
 "use client";
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Password } from "@/types/password";
+import { PasswordList } from "@/components/passwords/password-list";
 import { Button } from "@/components/ui/button";
-import { Plus, Search, Key, Copy, Edit, Trash } from "lucide-react";
-
-interface Password {
-  id: string;
-  title: string;
-  username: string;
-  website: string;
-  lastUpdated: string;
-}
+import { Plus } from "lucide-react";
+import axios from "axios";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function PasswordsPage() {
-  const [passwords] = useState<Password[]>([
-    {
-      id: "1",
-      title: "Gmail Account",
-      username: "john.doe@gmail.com",
-      website: "gmail.com",
-      lastUpdated: "2024-01-04",
-    },
-    {
-      id: "2",
-      title: "GitHub Account",
-      username: "johndoe",
-      website: "github.com",
-      lastUpdated: "2024-01-03",
-    },
-    {
-      id: "3",
-      title: "Netflix Account",
-      username: "john.doe@email.com",
-      website: "netflix.com",
-      lastUpdated: "2024-01-02",
-    },
-  ]);
+  const [passwords, setPasswords] = useState<Password[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchPasswords();
+  }, []);
+
+  const fetchPasswords = async () => {
+    try {
+      const response = await axios.get("/api/passwords");
+      setPasswords(response.data);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch passwords",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (password: Password) => {
+    // TODO: Implement edit functionality
+    console.log("Edit password:", password);
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await axios.delete(`/api/passwords/${id}`);
+      setPasswords((prev) => prev.filter((p) => p._id !== id));
+      toast({
+        description: "Password deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete password",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-purple-500"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Passwords</h2>
-          <p className="text-gray-500 dark:text-gray-400">
-            Manage your saved passwords
+          <h1 className="text-2xl font-bold text-white">Passwords</h1>
+          <p className="text-sm text-gray-400">
+            Manage your saved passwords securely
           </p>
         </div>
-        <Button className="bg-purple-600 hover:bg-purple-700">
+        <Button>
           <Plus className="mr-2 h-4 w-4" />
           Add Password
         </Button>
       </div>
 
-      <div className="flex items-center space-x-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-          <input
-            type="text"
-            placeholder="Search passwords..."
-            className="w-full rounded-md border border-gray-800 bg-gray-800 pl-9 pr-4 py-2 focus:border-purple-600 focus:outline-none focus:ring-1 focus:ring-purple-600"
-          />
-        </div>
-      </div>
-
-      <div className="grid gap-4">
-        {passwords.map((password) => (
-          <Card key={password.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-md font-medium flex items-center">
-                <Key className="mr-2 h-4 w-4 text-purple-600" />
-                {password.title}
-              </CardTitle>
-              <div className="flex items-center space-x-2">
-                <Button variant="ghost" size="icon">
-                  <Copy className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon">
-                  <Trash className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-1">
-                <div className="text-sm">
-                  <span className="font-medium">Username:</span>{" "}
-                  {password.username}
-                </div>
-                <div className="text-sm">
-                  <span className="font-medium">Website:</span>{" "}
-                  {password.website}
-                </div>
-                <div className="text-sm text-gray-500">
-                  Last updated: {password.lastUpdated}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <PasswordList
+        passwords={passwords}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
