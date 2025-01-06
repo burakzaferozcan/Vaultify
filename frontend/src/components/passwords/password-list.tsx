@@ -1,60 +1,127 @@
 "use client";
 
-import { useState } from "react";
-import { Password, PasswordListProps } from "@/types/password";
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { Password } from "@/types/password";
 import { PasswordItem } from "./password-item";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { passwordService } from "@/services/passwordService";
+import { useToast } from "@/components/ui/use-toast";
 
-export function PasswordList({ passwords, onEdit, onDelete }: PasswordListProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredPasswords = passwords.filter((password) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      password.title.toLowerCase().includes(searchLower) ||
-      password.username.toLowerCase().includes(searchLower) ||
-      (password.url?.toLowerCase() || "").includes(searchLower)
-    );
-  });
-
-  return (
-    <div className="space-y-4">
-      {/* Search Bar */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-500" />
-        <Input
-          type="text"
-          placeholder="Search passwords..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-        />
-      </div>
-
-      {/* Password List */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {filteredPasswords.map((password) => (
-          <PasswordItem
-            key={password._id}
-            password={password}
-            onEdit={onEdit}
-            onDelete={onDelete}
-          />
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {filteredPasswords.length === 0 && (
-        <div className="flex flex-col items-center justify-center space-y-2 rounded-lg border border-dashed border-gray-700 bg-gray-800/50 p-8 text-center">
-          <div className="text-lg font-medium text-gray-400">No passwords found</div>
-          <div className="text-sm text-gray-500">
-            {searchQuery
-              ? "Try adjusting your search query"
-              : "Add your first password to get started"}
-          </div>
-        </div>
-      )}
-    </div>
-  );
+interface PasswordListProps {
+  onEdit: (password: Password) => void;
+  onDelete?: (id: string) => Promise<void>;
 }
+
+export interface PasswordListRef {
+  fetchPasswords: () => Promise<void>;
+}
+
+export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
+  ({ onEdit, onDelete }, ref) => {
+    const [passwords, setPasswords] = useState<Password[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+
+    const fetchPasswords = async () => {
+      try {
+        setLoading(true);
+        const data = await passwordService.getAllPasswords();
+        setPasswords(data);
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response?.data?.error || "Failed to fetch passwords",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    useImperativeHandle(ref, () => ({
+      fetchPasswords,
+    }));
+
+    const handleSearch = async () => {
+      try {
+        setLoading(true);
+        const data = await passwordService.searchPasswords(searchQuery);
+        setPasswords(data);
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response?.data?.error || "Failed to search passwords",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const handleDelete = async (id: string) => {
+      try {
+        await passwordService.deletePassword(id);
+        toast({
+          description: "Password deleted successfully",
+        });
+        fetchPasswords();
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error.response?.data?.error || "Failed to delete password",
+        });
+      }
+    };
+
+    useEffect(() => {
+      fetchPasswords();
+    }, []);
+
+    useEffect(() => {
+      if (searchQuery) {
+        const delayDebounceFn = setTimeout(() => {
+          handleSearch();
+        }, 500);
+        return () => clearTimeout(delayDebounceFn);
+      } else {
+        fetchPasswords();
+      }
+    }, [searchQuery]);
+
+    if (loading) {
+      return <div>Loading...</div>;
+    }
+
+    return (
+      <div className="space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Search passwords..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+        <div className="space-y-2">
+          {passwords.length === 0 ? (
+            <div className="text-center text-gray-500">No passwords found</div>
+          ) : (
+            passwords.map((password) => (
+              <PasswordItem
+                key={password._id}
+                password={password}
+                onEdit={() => onEdit(password)}
+                onDelete={onDelete ? () => onDelete(password._id) : () => handleDelete(password._id)}
+              />
+            ))
+          )}
+        </div>
+      </div>
+    );
+  }
+);
