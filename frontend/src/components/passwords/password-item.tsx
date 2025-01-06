@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Password, PasswordItemProps } from "@/types/password";
-import { Card } from "@/components/ui/card";
+import { Password } from "@/types/password";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,103 +9,152 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Copy, Eye, EyeOff, Globe, MoreVertical, Pencil, Trash2 } from "lucide-react";
+import {
+  Copy,
+  Eye,
+  EyeOff,
+  Globe,
+  MoreVertical,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-export function PasswordItem({ password, onEdit, onDelete }: PasswordItemProps) {
+interface PasswordItemProps {
+  password: Password;
+  onEdit: (password: Password) => void;
+  onDelete: (id: string) => void;
+}
+
+export function PasswordItem({
+  password,
+  onEdit,
+  onDelete,
+}: PasswordItemProps) {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
-  const copyToClipboard = async (text: string, type: "password" | "username") => {
+  const copyToClipboard = async (
+    text: string,
+    type: "password" | "username" | "url"
+  ) => {
+    let textToCopy = "";
+    if (type === "url") {
+      textToCopy = "URL copied to clipboard";
+    } else if (type === "password") {
+      textToCopy = "Password copied to clipboard";
+    } else {
+      textToCopy = "Username copied to clipboard";
+    }
     try {
       await navigator.clipboard.writeText(text);
       toast({
-        description: `${type === "password" ? "Password" : "Username"} copied to clipboard`,
+        description: textToCopy,
       });
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
         description: "Failed to copy to clipboard",
       });
     }
   };
 
   return (
-    <Card className="overflow-hidden bg-gray-800/50 p-4">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h3 className="font-medium text-white">{password.title}</h3>
-          <p className="text-sm text-gray-400">{password.username}</p>
+    <div className="flex items-center justify-between space-x-4 rounded-lg border border-gray-700 bg-gray-800 p-4">
+      <div className="min-w-0 flex-1 space-y-1">
+        <div className="flex items-center justify-between">
+          <p className="truncate text-sm font-medium text-white">
+            {password.title}
+          </p>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => copyToClipboard(password.username, "username")}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Username
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => copyToClipboard(password.password, "password")}>
-              <Copy className="mr-2 h-4 w-4" />
-              Copy Password
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(password)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              className="text-red-500 focus:text-red-500"
-              onClick={() => onDelete(password._id)}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="mt-4 space-y-2">
         <div className="flex items-center space-x-2">
-          <div className="relative flex-1">
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password.password}
-              readOnly
-              className="w-full rounded bg-gray-700 px-3 py-1 text-sm text-gray-300"
-            />
+          <p className="truncate text-sm text-gray-400">{password.username}</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0"
+            onClick={() => copyToClipboard(password.username, "username")}
+          >
+            <Copy className="h-3 w-3" />
+            <span className="sr-only">Copy username</span>
+          </Button>
+        </div>
+        <div className="flex items-center space-x-2">
+          <p className="truncate text-sm text-gray-400">
+            {showPassword ? password.password : "••••••••"}
+          </p>
+          <div className="flex items-center space-x-1">
             <Button
               variant="ghost"
-              size="icon"
-              className="absolute right-0 top-0"
+              size="sm"
+              className="h-6 w-6 p-0"
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? (
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-3 w-3" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3 w-3" />
               )}
+              <span className="sr-only">
+                {showPassword ? "Hide password" : "Show password"}
+              </span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => copyToClipboard(password.password, "password")}
+            >
+              <Copy className="h-3 w-3" />
+              <span className="sr-only">Copy password</span>
             </Button>
           </div>
         </div>
-
         {password.url && (
-          <div className="flex items-center space-x-2 text-sm text-gray-400">
-            <Globe className="h-4 w-4" />
+          <>
             <a
               href={password.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-purple-400"
+              className="inline-flex items-center space-x-1 text-xs text-purple-400 hover:text-purple-300"
             >
-              {new URL(password.url).hostname}
+              <Globe className="h-3 w-3" />
+              <span className="truncate">{password.url}</span>
             </a>
-          </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => copyToClipboard(password.url, "url")}
+            >
+              <Copy className="h-3 w-3" />
+              <span className="sr-only">Copy password</span>
+            </Button>
+          </>
         )}
       </div>
-    </Card>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <MoreVertical className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[160px]">
+          <DropdownMenuItem onClick={() => onEdit(password)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-red-500 focus:text-red-500"
+            onClick={() => onDelete(password._id)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }
