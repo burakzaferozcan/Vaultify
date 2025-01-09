@@ -6,13 +6,14 @@ import { PasswordList } from "@/components/passwords/password-list";
 import { PasswordModal } from "@/components/passwords/password-modal";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { PasswordListRef } from "@/components/passwords/password-list";
 
 export default function PasswordsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPassword, setSelectedPassword] = useState<Password | undefined>(
     undefined
   );
-  const passwordListRef = useRef<{ fetchPasswords: () => Promise<void> }>();
+  const passwordListRef = useRef<PasswordListRef | null>(null);
 
   const handleAddPassword = () => {
     setSelectedPassword(undefined);
@@ -31,7 +32,6 @@ export default function PasswordsPage() {
 
   const handleSuccess = () => {
     handleCloseModal();
-    // Password listesini yenile
     passwordListRef.current?.fetchPasswords();
   };
 
