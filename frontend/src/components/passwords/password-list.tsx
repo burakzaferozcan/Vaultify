@@ -17,7 +17,7 @@ export interface PasswordListRef {
   fetchPasswords: () => Promise<void>;
 }
 
-export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
+const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
   ({ onEdit, onDelete }, ref) => {
     const [passwords, setPasswords] = useState<Password[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +30,7 @@ export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         const data = await passwordService.getAllPasswords();
         setPasswords(data);
       } catch (error: any) {
+        console.error('Error fetching passwords:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -50,6 +51,7 @@ export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         const data = await passwordService.searchPasswords(searchQuery);
         setPasswords(data);
       } catch (error: any) {
+        console.error('Error searching passwords:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -63,11 +65,12 @@ export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
     const handleDelete = async (id: string) => {
       try {
         await passwordService.deletePassword(id);
+        await fetchPasswords(); // Listeyi yenile
         toast({
           description: "Password deleted successfully",
         });
-        fetchPasswords();
       } catch (error: any) {
+        console.error('Error deleting password:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -92,7 +95,11 @@ export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
     }, [searchQuery]);
 
     if (loading) {
-      return <div>Loading...</div>;
+      return (
+        <div className="flex h-32 items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent"></div>
+        </div>
+      );
     }
 
     return (
@@ -125,3 +132,7 @@ export const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
     );
   }
 );
+
+PasswordList.displayName = "PasswordList";
+
+export { PasswordList };
