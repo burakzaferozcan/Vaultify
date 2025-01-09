@@ -28,7 +28,7 @@ export function PasswordModal({
 
   const handleSubmit = async (data: PasswordFormData) => {
     try {
-      if (password) {
+      if (password?._id) {
         // Update existing password
         await passwordService.updatePassword(password._id, data);
         toast({
@@ -44,6 +44,7 @@ export function PasswordModal({
       onSuccess();
       onClose();
     } catch (error: any) {
+      console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
