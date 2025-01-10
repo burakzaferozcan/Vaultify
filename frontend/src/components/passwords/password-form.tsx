@@ -1,12 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Password, PasswordFormData } from "@/types/password";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Password, PasswordFormData, passwordFormSchema } from "@/types/password";
+import { Eye, EyeOff, Wand2 } from "lucide-react";
+import { PasswordStrength } from "./password-strength";
+import { PasswordGenerator } from "./password-generator";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
 
 interface PasswordFormProps {
   initialData?: Password;
@@ -14,115 +32,164 @@ interface PasswordFormProps {
   onCancel: () => void;
 }
 
-export function PasswordForm({ initialData, onSubmit, onCancel }: PasswordFormProps) {
-  const [formData, setFormData] = useState<PasswordFormData>({
-    title: initialData?.title || "",
-    username: initialData?.username || "",
-    password: initialData?.password || "",
-    url: initialData?.url || "",
-    notes: initialData?.notes || "",
+export function PasswordForm({
+  initialData,
+  onSubmit,
+  onCancel,
+}: PasswordFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showGenerator, setShowGenerator] = useState(false);
+  const { toast } = useToast();
+  
+  const form = useForm<PasswordFormData>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      title: initialData?.title || "",
+      username: initialData?.username || "",
+      password: initialData?.password || "",
+      url: initialData?.url || "",
+      notes: initialData?.notes || "",
+    },
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleGeneratedPassword = (password: string) => {
+    form.setValue("password", password);
+    setShowGenerator(false);
+    toast({
+      description: "Password generated successfully",
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
           name="title"
-          value={formData.title}
-          onChange={handleChange}
-          placeholder="e.g., Gmail Account"
-          required
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., Gmail Account" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="username">Username</Label>
-        <Input
-          id="username"
+        <FormField
+          control={form.control}
           name="username"
-          value={formData.username}
-          onChange={handleChange}
-          placeholder="e.g., john.doe@gmail.com"
-          required
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Username</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., john.doe@gmail.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
-        <div className="relative">
-          <Input
-            id="password"
-            name="password"
-            type={showPassword ? "text" : "password"}
-            value={formData.password}
-            onChange={handleChange}
-            className="pr-10"
-            required
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-0 top-0"
-            onClick={() => setShowPassword(!showPassword)}
-          >
-            {showPassword ? (
-              <EyeOff className="h-4 w-4" />
-            ) : (
-              <Eye className="h-4 w-4" />
-            )}
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    {...field}
+                  />
+                  <div className="absolute right-0 top-0 flex h-full items-center space-x-1 px-3">
+                    <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
+                      <DialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0 hover:bg-transparent"
+                        >
+                          <Wand2 className="h-4 w-4" />
+                          <span className="sr-only">Generate password</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Generate Strong Password</DialogTitle>
+                        </DialogHeader>
+                        <PasswordGenerator onGenerate={handleGeneratedPassword} />
+                      </DialogContent>
+                    </Dialog>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 hover:bg-transparent"
+                      onClick={togglePasswordVisibility}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                      <span className="sr-only">
+                        {showPassword ? "Hide password" : "Show password"}
+                      </span>
+                    </Button>
+                  </div>
+                </div>
+              </FormControl>
+              <PasswordStrength password={field.value} />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g., https://gmail.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Notes (Optional)</FormLabel>
+              <FormControl>
+                <Input placeholder="Add any additional notes..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-2">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">
+            {initialData ? "Update Password" : "Add Password"}
           </Button>
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="url">Website URL (optional)</Label>
-        <Input
-          id="url"
-          name="url"
-          type="url"
-          value={formData.url}
-          onChange={handleChange}
-          placeholder="e.g., https://gmail.com"
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="notes">Notes (optional)</Label>
-        <Textarea
-          id="notes"
-          name="notes"
-          value={formData.notes}
-          onChange={handleChange}
-          placeholder="Add any additional notes..."
-          className="h-24 resize-none"
-        />
-      </div>
-
-      <div className="flex justify-end space-x-2 pt-4">
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button type="submit">
-          {initialData ? "Update Password" : "Add Password"}
-        </Button>
-      </div>
-    </form>
+      </form>
+    </Form>
   );
 }
