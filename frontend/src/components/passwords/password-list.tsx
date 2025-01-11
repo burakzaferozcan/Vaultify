@@ -25,6 +25,7 @@ interface PasswordListProps {
 
 export interface PasswordListRef {
   refreshPasswords: () => Promise<void>;
+  fetchPasswords: () => Promise<void>;
 }
 
 const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
@@ -119,6 +120,7 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
 
     useImperativeHandle(ref, () => ({
       refreshPasswords: fetchPasswords,
+      fetchPasswords: fetchPasswords,
     }));
 
     return (
