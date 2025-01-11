@@ -17,6 +17,7 @@ import { Password, PasswordFormData, passwordFormSchema } from "@/types/password
 import { Eye, EyeOff, Wand2 } from "lucide-react";
 import { PasswordStrength } from "./password-strength";
 import { PasswordGenerator } from "./password-generator";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -24,7 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
 
 interface PasswordFormProps {
   initialData?: Password;
