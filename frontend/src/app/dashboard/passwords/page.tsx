@@ -13,7 +13,7 @@ export default function PasswordsPage() {
   const [selectedPassword, setSelectedPassword] = useState<Password | undefined>(
     undefined
   );
-  const passwordListRef = useRef<PasswordListRef | null>(null);
+  const passwordListRef = useRef<PasswordListRef>(null);
 
   const handleAddPassword = () => {
     setSelectedPassword(undefined);
@@ -32,7 +32,7 @@ export default function PasswordsPage() {
 
   const handleSuccess = () => {
     handleCloseModal();
-    passwordListRef.current?.fetchPasswords();
+    passwordListRef.current?.refreshPasswords();
   };
 
   return (
