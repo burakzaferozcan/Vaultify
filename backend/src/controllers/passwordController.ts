@@ -135,19 +135,49 @@ export class PasswordController {
         passwords
       );
 
+      const fieldMapping = {
+        title: "Title",
+        username: "Username",
+        password: "Password",
+        url: "URL",
+        notes: "Notes",
+        createdAt: "Creation Date",
+        updatedAt: "Last Updated",
+      };
+
+      const sanitizedPasswords = decryptedPasswords.map(
+        ({ title, username, password, url, notes, createdAt, updatedAt }) => ({
+          Title: title,
+          Username: username,
+          Password: password,
+          URL: url,
+          Notes: notes,
+          "Creation Date": createdAt?.toISOString().split("T")[0],
+          "Last Updated": updatedAt?.toISOString().split("T")[0],
+        })
+      );
+
       if (format === "csv") {
         const fields = [
-          "title",
-          "username",
-          "password",
-          "url",
-          "notes",
-          "createdAt",
+          "Title",
+          "Username",
+          "Password",
+          "URL",
+          "Notes",
+          "Creation Date",
+          "Last Updated",
         ];
-        const csv = decryptedPasswords.map((pass) =>
-          fields.map((field) => (pass as any)[field]).join(",")
+
+        const csv = sanitizedPasswords.map((pass) =>
+          fields
+            .map((field) => {
+              const value = (pass as any)[field];
+
+              return value ? `"${value.toString().replace(/"/g, '""')}"` : "";
+            })
+            .join(",")
         );
-        csv.unshift(fields.join(",")); // Başlık satırını ekle
+        csv.unshift(fields.join(","));
 
         res.setHeader("Content-Type", "text/csv");
         res.setHeader(
@@ -162,7 +192,8 @@ export class PasswordController {
         "Content-Disposition",
         "attachment; filename=passwords.json"
       );
-      return res.json(decryptedPasswords);
+
+      return res.send(JSON.stringify(sanitizedPasswords, null, 2));
     } catch (error: any) {
       return res.status(400).json({
         error: error.message || "An error occurred while exporting passwords",
