@@ -4,7 +4,7 @@ import { useState, forwardRef, useEffect, useImperativeHandle } from "react";
 import { Password } from "@/types/password";
 import { PasswordItem } from "./password-item";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Wand2 } from "lucide-react";
+import { Search, Plus, Wand2, Download } from "lucide-react";
 import { passwordService } from "@/services/passwordService";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,12 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { PasswordGenerator } from "./password-generator";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface PasswordListProps {
   onEdit: (password: Password) => void;
@@ -46,7 +52,8 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.response?.data?.error || "Failed to fetch passwords",
+          description:
+            error.response?.data?.error || "Failed to fetch passwords",
         });
       } finally {
         setLoading(false);
@@ -67,7 +74,8 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.response?.data?.error || "Failed to search passwords",
+          description:
+            error.response?.data?.error || "Failed to search passwords",
         });
       } finally {
         setLoading(false);
@@ -86,7 +94,8 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         toast({
           variant: "destructive",
           title: "Error",
-          description: error.response?.data?.error || "Failed to delete password",
+          description:
+            error.response?.data?.error || "Failed to delete password",
         });
       }
     };
@@ -102,6 +111,22 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         toast({
           variant: "destructive",
           description: "Failed to copy password to clipboard",
+        });
+      }
+    };
+
+    const handleExport = async (format: "json" | "csv") => {
+      try {
+        await passwordService.exportPasswords(format);
+        toast({
+          description: `Passwords exported as ${format.toUpperCase()} successfully`,
+        });
+      } catch (error) {
+        console.error("Error exporting passwords:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to export passwords",
         });
       }
     };
@@ -125,9 +150,42 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
 
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex gap-4 items-start lg:items-center justify-between flex-col lg:flex-row">
           <h2 className="text-lg font-semibold">Your Passwords</h2>
           <div className="flex items-center space-x-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Input
+                placeholder="Search passwords..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                className="pl-8"
+              />
+            </div>
+            <Button variant={"secondary"} onClick={() => handleSearch()}>
+              Search
+            </Button>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size={"sm"} variant="outline">
+                  <Download className="mr-2 h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => handleExport("json")}>
+                  Export as JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport("csv")}>
+                  Export as CSV
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <Button
               variant="outline"
               size="sm"
@@ -144,17 +202,6 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
               </Button>
             )}
           </div>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-          <Input
-            type="search"
-            placeholder="Search passwords..."
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
         </div>
 
         <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
