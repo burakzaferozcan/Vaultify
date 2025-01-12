@@ -13,7 +13,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Password, PasswordFormData, passwordFormSchema } from "@/types/password";
+import {
+  Password,
+  PasswordFormData,
+  passwordFormSchema,
+} from "@/types/password";
 import { Eye, EyeOff, Wand2 } from "lucide-react";
 import { PasswordStrength } from "./password-strength";
 import { PasswordGenerator } from "./password-generator";
@@ -41,7 +45,7 @@ export function PasswordForm({
   const [showPassword, setShowPassword] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const { toast } = useToast();
-  
+
   const form = useForm<PasswordFormData>({
     resolver: zodResolver(passwordFormSchema),
     defaultValues: {
@@ -110,7 +114,10 @@ export function PasswordForm({
                     {...field}
                   />
                   <div className="absolute right-0 top-0 flex h-full items-center space-x-1 px-3">
-                    <Dialog open={showGenerator} onOpenChange={setShowGenerator}>
+                    <Dialog
+                      open={showGenerator}
+                      onOpenChange={setShowGenerator}
+                    >
                       <DialogTrigger asChild>
                         <Button
                           type="button"
@@ -126,7 +133,9 @@ export function PasswordForm({
                         <DialogHeader>
                           <DialogTitle>Generate Strong Password</DialogTitle>
                         </DialogHeader>
-                        <PasswordGenerator onGenerate={handleGeneratedPassword} />
+                        <PasswordGenerator
+                          onGenerate={handleGeneratedPassword}
+                        />
                       </DialogContent>
                     </Dialog>
                     <Button
@@ -162,20 +171,6 @@ export function PasswordForm({
               <FormLabel>URL (Optional)</FormLabel>
               <FormControl>
                 <Input placeholder="e.g., https://gmail.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Notes (Optional)</FormLabel>
-              <FormControl>
-                <Input placeholder="Add any additional notes..." {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
