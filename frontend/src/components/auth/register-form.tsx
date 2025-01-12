@@ -51,6 +51,7 @@ export function RegisterForm() {
       toast({
         title: "Success!",
         description: "Your account has been created successfully.",
+        variant: "success",
       });
     } catch (error: any) {
       toast({

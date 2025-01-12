@@ -88,6 +88,7 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         await fetchPasswords();
         toast({
           description: "Password deleted successfully",
+          variant: "success",
         });
       } catch (error: any) {
         console.error("Error deleting password:", error);
@@ -106,6 +107,7 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         setShowGenerator(false);
         toast({
           description: "Generated password copied to clipboard",
+          variant: "success",
         });
       } catch (error) {
         toast({
@@ -120,6 +122,7 @@ const PasswordList = forwardRef<PasswordListRef, PasswordListProps>(
         await passwordService.exportPasswords(format);
         toast({
           description: `Passwords exported as ${format.toUpperCase()} successfully`,
+          variant: "success",
         });
       } catch (error) {
         console.error("Error exporting passwords:", error);

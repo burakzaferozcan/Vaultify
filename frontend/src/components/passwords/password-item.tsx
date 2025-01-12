@@ -30,6 +30,7 @@ export function PasswordItem({
         description: `${
           type === "password" ? "Password" : "Username"
         } copied to clipboard`,
+        variant: "success",
       });
     } catch (error) {
       toast({

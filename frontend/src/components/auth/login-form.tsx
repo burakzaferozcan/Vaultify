@@ -42,6 +42,7 @@ export function LoginForm() {
       toast({
         title: "Success!",
         description: "You have successfully logged in.",
+        variant: "success",
       });
     } catch (error: any) {
       toast({
