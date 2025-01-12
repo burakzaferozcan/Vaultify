@@ -10,9 +10,9 @@ import { PasswordListRef } from "@/components/passwords/password-list";
 
 export default function PasswordsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPassword, setSelectedPassword] = useState<Password | undefined>(
-    undefined
-  );
+  const [selectedPassword, setSelectedPassword] = useState<
+    Password | undefined
+  >(undefined);
   const passwordListRef = useRef<PasswordListRef>(null);
 
   const handleAddPassword = () => {
@@ -39,16 +39,13 @@ export default function PasswordsPage() {
     <div className="container mx-auto py-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-white">Passwords</h1>
-        <Button onClick={handleAddPassword}>
+        <Button variant={"secondary"} onClick={handleAddPassword}>
           <Plus className="mr-2 h-4 w-4" />
           Add Password
         </Button>
       </div>
 
-      <PasswordList
-        ref={passwordListRef}
-        onEdit={handleEditPassword}
-      />
+      <PasswordList ref={passwordListRef} onEdit={handleEditPassword} />
 
       <PasswordModal
         isOpen={isModalOpen}
