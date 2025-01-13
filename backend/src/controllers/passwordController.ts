@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Types } from "mongoose";
 import { PasswordService } from "../services/passwordService";
+import { ActivityService } from "../services/activityService";
 
 export class PasswordController {
   static async create(req: Request, res: Response): Promise<Response> {
@@ -128,12 +129,17 @@ export class PasswordController {
   static async export(req: Request, res: Response): Promise<Response> {
     try {
       const userId = new Types.ObjectId(req.user._id);
-      const format = (req.query.format as string) || "json";
-
       const passwords = await PasswordService.getAllPasswords(userId);
       const decryptedPasswords = await PasswordService.decryptPasswordsData(
         passwords
       );
+
+      await ActivityService.createActivity({
+        userId,
+        action: "export",
+        resourceType: "password",
+        details: "Exported all passwords",
+      });
 
       const fieldMapping = {
         title: "Title",
@@ -156,6 +162,8 @@ export class PasswordController {
           "Last Updated": updatedAt?.toISOString().split("T")[0],
         })
       );
+
+      const format = (req.query.format as string) || "json";
 
       if (format === "csv") {
         const fields = [

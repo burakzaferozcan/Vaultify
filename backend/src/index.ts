@@ -4,6 +4,7 @@ import { config } from "./config/environment";
 import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
 import passwordRoutes from "./routes/passwords";
+import activityRoutes from "./routes/activity";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/passwords", passwordRoutes);
+app.use("/api/activity", activityRoutes);
 
 // DB Connection
 connectDB().then(() => {
