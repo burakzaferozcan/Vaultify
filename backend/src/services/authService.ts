@@ -1,6 +1,9 @@
+import { Types } from "mongoose";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { IUser, User } from "../models/User";
+import { User, IUser } from "../models/User";
 import { config } from "../config/environment";
+import { ActivityService } from "./activityService";
 import { hashPassword, comparePassword } from "../utils/encryption";
 
 export class AuthService {
@@ -26,6 +29,14 @@ export class AuthService {
       });
 
       await user.save();
+
+      // Activity kaydı oluştur
+      await ActivityService.createActivity({
+        userId: user._id,
+        action: "create",
+        resourceType: "account",
+        details: "Created new account",
+      });
 
       // JWT token oluştur
       const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
@@ -59,6 +70,14 @@ export class AuthService {
         throw new Error("Invalid email or password");
       }
 
+      // Activity kaydı oluştur
+      await ActivityService.createActivity({
+        userId: user._id,
+        action: "login",
+        resourceType: "account",
+        details: "Logged in",
+      });
+
       // JWT token oluştur
       const token = jwt.sign({ userId: user._id }, config.jwtSecret, {
         expiresIn: "7d",
@@ -68,5 +87,73 @@ export class AuthService {
     } catch (error) {
       throw error;
     }
+  }
+
+  static async logout(userId: Types.ObjectId): Promise<void> {
+    // Activity kaydı oluştur
+    await ActivityService.createActivity({
+      userId,
+      action: "logout",
+      resourceType: "account",
+      details: "Logged out",
+    });
+  }
+
+  static async updateProfile(
+    userId: Types.ObjectId,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    }
+  ): Promise<IUser | null> {
+    const updatedUser = await User.findByIdAndUpdate(userId, data, { new: true });
+
+    if (updatedUser) {
+      // Activity kaydı oluştur
+      await ActivityService.createActivity({
+        userId,
+        action: "update",
+        resourceType: "account",
+        details: "Updated profile information",
+      });
+    }
+
+    return updatedUser;
+  }
+
+  static async changePassword(
+    userId: Types.ObjectId,
+    data: {
+      currentPassword: string;
+      newPassword: string;
+    }
+  ): Promise<IUser | null> {
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const isValidPassword = await comparePassword(
+      data.currentPassword,
+      user.password
+    );
+    if (!isValidPassword) {
+      throw new Error("Current password is incorrect");
+    }
+
+    const hashedPassword = await hashPassword(data.newPassword);
+    user.password = hashedPassword;
+    await user.save();
+
+    // Activity kaydı oluştur
+    await ActivityService.createActivity({
+      userId,
+      action: "update",
+      resourceType: "account",
+      details: "Changed password",
+    });
+
+    return user;
   }
 }
