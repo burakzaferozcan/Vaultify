@@ -7,11 +7,14 @@ import {
   ShieldCheck,
   AlertTriangle,
   Clock,
-  RefreshCcw,
+  RefreshCw,
   Shield,
 } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { PasswordOverview } from "@/components/dashboard/password-overview";
+import { RecentActivities } from "@/components/dashboard/recent-activities";
+import { SecurityTips } from "@/components/dashboard/security-tips";
+import { QuickActions } from "@/components/dashboard/quick-actions";
 import { passwordService } from "@/services/passwordService";
 import { Password } from "@/types/password";
 
@@ -71,42 +74,7 @@ export default function DashboardPage() {
     return Math.min(5, Math.floor(score * 0.8));
   };
 
-  const calculateStrengthDistribution = () => {
-    const distribution = {
-      veryWeak: 0,
-      weak: 0,
-      fair: 0,
-      strong: 0,
-      veryStrong: 0,
-    };
-
-    passwords.forEach((password) => {
-      const strength = calculatePasswordStrength(password.password);
-      switch (strength) {
-        case 0:
-          distribution.veryWeak++;
-          break;
-        case 1:
-          distribution.weak++;
-          break;
-        case 2:
-          distribution.fair++;
-          break;
-        case 3:
-          distribution.strong++;
-          break;
-        case 4:
-        case 5:
-          distribution.veryStrong++;
-          break;
-      }
-    });
-
-    return distribution;
-  };
-
   const stats = calculatePasswordStats();
-  const strengthDistribution = calculateStrengthDistribution();
 
   if (loading) {
     return (
@@ -117,52 +85,60 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto space-y-6 p-4">
       <div>
-        <h2 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user?.name}!
-        </h2>
+        <h2 className="text-3xl font-bold tracking-tight">Welcome back!</h2>
         <p className="text-muted-foreground">
-          Here&apos;s an overview of your vault security
+          Here&apos;s a summary of your password security
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Passwords"
           value={stats.totalPasswords}
+          description="Stored passwords"
           icon={Key}
-          description="Stored in your vault"
+          trend="neutral"
         />
         <StatsCard
           title="Weak Passwords"
           value={stats.weakPasswords}
+          description="Need strengthening"
           icon={AlertTriangle}
-          description="Need to be strengthened"
+          trend="down"
         />
         <StatsCard
           title="Reused Passwords"
           value={stats.reusedPasswords}
-          icon={RefreshCcw}
-          description="Used in multiple accounts"
+          description="Used multiple times"
+          icon={RefreshCw}
+          trend="down"
         />
         <StatsCard
           title="Old Passwords"
           value={stats.oldPasswords}
+          description="Over 90 days old"
           icon={Clock}
-          description="Not updated in 90 days"
+          trend="down"
         />
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <PasswordOverview
-          totalPasswords={stats.totalPasswords}
-          strengthDistribution={strengthDistribution}
-          reusedPasswords={stats.reusedPasswords}
-          oldPasswords={stats.oldPasswords}
-        />
-        <div className="space-y-4">
-          {/* Buraya Recent Activity veya Security Tips eklenebilir */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PasswordOverview passwords={passwords} loading={loading} />
+        </div>
+        <div>
+          <SecurityTips />
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <RecentActivities />
+        </div>
+        <div>
+          <QuickActions />
         </div>
       </div>
     </div>
