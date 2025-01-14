@@ -2,31 +2,79 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-
-interface PasswordStrengthDistribution {
-  veryWeak: number;
-  weak: number;
-  fair: number;
-  strong: number;
-  veryStrong: number;
-}
+import { Password } from "@/types/password";
 
 interface PasswordOverviewProps {
-  totalPasswords: number;
-  strengthDistribution: PasswordStrengthDistribution;
-  reusedPasswords: number;
-  oldPasswords: number;
+  passwords: Password[];
+  loading: boolean;
 }
 
-export function PasswordOverview({
-  totalPasswords,
-  strengthDistribution,
-  reusedPasswords,
-  oldPasswords,
-}: PasswordOverviewProps) {
-  const getPercentage = (value: number) => {
-    return totalPasswords > 0 ? (value / totalPasswords) * 100 : 0;
+export function PasswordOverview({ passwords, loading }: PasswordOverviewProps) {
+  const calculateStrengthDistribution = () => {
+    const distribution = {
+      veryWeak: 0,
+      weak: 0,
+      fair: 0,
+      strong: 0,
+      veryStrong: 0,
+    };
+
+    passwords.forEach((password) => {
+      const strength = calculatePasswordStrength(password.password);
+      switch (strength) {
+        case 0:
+          distribution.veryWeak++;
+          break;
+        case 1:
+          distribution.weak++;
+          break;
+        case 2:
+          distribution.fair++;
+          break;
+        case 3:
+          distribution.strong++;
+          break;
+        case 4:
+        case 5:
+          distribution.veryStrong++;
+          break;
+      }
+    });
+
+    return distribution;
   };
+
+  const calculatePasswordStrength = (password: string): number => {
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (password.length >= 12) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    return Math.min(5, Math.floor(score * 0.8));
+  };
+
+  const getPercentage = (value: number) => {
+    return passwords.length > 0 ? (value / passwords.length) * 100 : 0;
+  };
+
+  const strengthDistribution = calculateStrengthDistribution();
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base font-medium">Password Health</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-sm text-gray-500">Loading...</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -43,35 +91,21 @@ export function PasswordOverview({
           </div>
           <Progress
             value={getPercentage(strengthDistribution.veryStrong)}
-            className="bg-gray-700 h-2"
-          >
-            <div
-              className="h-full bg-green-500 transition-all"
-              style={{
-                width: `${getPercentage(strengthDistribution.veryStrong)}%`,
-              }}
-            />
-          </Progress>
+            className="h-2 bg-gray-700"
+          />
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span>Strong</span>
-            <span className="text-emerald-500">
+            <span className="text-blue-500">
               {strengthDistribution.strong} passwords
             </span>
           </div>
           <Progress
             value={getPercentage(strengthDistribution.strong)}
-            className="bg-gray-700 h-2"
-          >
-            <div
-              className="h-full bg-emerald-500 transition-all"
-              style={{
-                width: `${getPercentage(strengthDistribution.strong)}%`,
-              }}
-            />
-          </Progress>
+            className="h-2 bg-gray-700"
+          />
         </div>
 
         <div className="space-y-2">
@@ -83,13 +117,8 @@ export function PasswordOverview({
           </div>
           <Progress
             value={getPercentage(strengthDistribution.fair)}
-            className="bg-gray-700 h-2"
-          >
-            <div
-              className="h-full bg-yellow-500 transition-all"
-              style={{ width: `${getPercentage(strengthDistribution.fair)}%` }}
-            />
-          </Progress>
+            className="h-2 bg-gray-700"
+          />
         </div>
 
         <div className="space-y-2">
@@ -101,13 +130,8 @@ export function PasswordOverview({
           </div>
           <Progress
             value={getPercentage(strengthDistribution.weak)}
-            className="bg-gray-700 h-2"
-          >
-            <div
-              className="h-full bg-orange-500 transition-all"
-              style={{ width: `${getPercentage(strengthDistribution.weak)}%` }}
-            />
-          </Progress>
+            className="h-2 bg-gray-700"
+          />
         </div>
 
         <div className="space-y-2">
@@ -119,28 +143,8 @@ export function PasswordOverview({
           </div>
           <Progress
             value={getPercentage(strengthDistribution.veryWeak)}
-            className="bg-gray-700 h-2"
-          >
-            <div
-              className="h-full bg-red-500 transition-all"
-              style={{
-                width: `${getPercentage(strengthDistribution.veryWeak)}%`,
-              }}
-            />
-          </Progress>
-        </div>
-
-        <div className="mt-6 space-y-2 pt-4 border-t border-gray-800">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-yellow-500">Reused Passwords</span>
-            <span>{reusedPasswords}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-orange-500">
-              Old Passwords ({">"}90 days)
-            </span>
-            <span>{oldPasswords}</span>
-          </div>
+            className="h-2 bg-gray-700"
+          />
         </div>
       </CardContent>
     </Card>
