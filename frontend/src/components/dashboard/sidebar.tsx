@@ -10,6 +10,8 @@ import {
   Shield,
   Settings,
   ChevronLeft,
+  LayoutDashboardIcon,
+  ActivityIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
@@ -23,6 +25,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
 
   const navigation = [
+    {
+      name: "Dashboard",
+      href: "/dashboard",
+      icon: LayoutDashboardIcon,
+    },
     {
       name: "Passwords",
       href: "/dashboard/passwords",
@@ -42,6 +49,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       name: "Security",
       href: "/dashboard/security",
       icon: Shield,
+    },
+    {
+      name: "All Activities",
+      href: "/dashboard/activities",
+      icon: ActivityIcon,
     },
     {
       name: "Settings",
