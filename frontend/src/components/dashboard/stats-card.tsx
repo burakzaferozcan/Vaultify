@@ -8,10 +8,7 @@ interface StatsCardProps {
   value: string | number;
   description?: string;
   icon: LucideIcon;
-  trend?: {
-    value: number;
-    isPositive: boolean;
-  };
+  trend?: "up" | "down" | "neutral";
 }
 
 export function StatsCard({
@@ -21,6 +18,28 @@ export function StatsCard({
   icon: Icon,
   trend,
 }: StatsCardProps) {
+  const getTrendColor = (trend?: string) => {
+    switch (trend) {
+      case "up":
+        return "text-green-500";
+      case "down":
+        return "text-red-500";
+      default:
+        return "text-gray-500";
+    }
+  };
+
+  const getTrendIcon = (trend?: string) => {
+    switch (trend) {
+      case "up":
+        return "↑";
+      case "down":
+        return "↓";
+      default:
+        return "→";
+    }
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -33,13 +52,8 @@ export function StatsCard({
         <div className="flex items-baseline space-x-3">
           <div className="text-2xl font-bold">{value}</div>
           {trend && (
-            <div
-              className={`text-sm ${
-                trend.isPositive ? "text-green-500" : "text-red-500"
-              }`}
-            >
-              {trend.isPositive ? "+" : "-"}
-              {trend.value}%
+            <div className={`text-sm ${getTrendColor(trend)}`}>
+              {getTrendIcon(trend)}
             </div>
           )}
         </div>
