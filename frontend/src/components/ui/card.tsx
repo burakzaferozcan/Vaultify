@@ -8,7 +8,7 @@ interface CardProps {
 export function Card({ className = "", children }: CardProps) {
   return (
     <div
-      className={`rounded-lg border  shadow-sm border-gray-800 bg-gray-800 ${className}`}
+      className={`rounded-lg border shadow-sm border-gray-800 bg-gray-800 ${className}`}
     >
       {children}
     </div>
@@ -36,6 +36,19 @@ export function CardTitle({ className = "", children }: CardTitleProps) {
     >
       {children}
     </h3>
+  );
+}
+
+interface CardDescriptionProps {
+  className?: string;
+  children: React.ReactNode;
+}
+
+export function CardDescription({ className = "", children }: CardDescriptionProps) {
+  return (
+    <p className={`text-sm text-gray-500 dark:text-gray-400 ${className}`}>
+      {children}
+    </p>
   );
 }
 
