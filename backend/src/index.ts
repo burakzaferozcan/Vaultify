@@ -5,6 +5,7 @@ import { connectDB } from "./config/database";
 import authRoutes from "./routes/auth";
 import passwordRoutes from "./routes/passwords";
 import activityRoutes from "./routes/activity";
+import cardRoutes from './routes/cardRoutes';
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/passwords", passwordRoutes);
 app.use("/api/activity", activityRoutes);
+app.use('/api/cards', cardRoutes);
 
 // DB Connection
 connectDB().then(() => {
