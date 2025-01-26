@@ -59,7 +59,7 @@ export function CardModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
-      <DialogContent onClose={onClose}>
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]" onClose={onClose}>
         <DialogHeader>
           <DialogTitle>{card ? "Edit Card" : "Add New Card"}</DialogTitle>
         </DialogHeader>
